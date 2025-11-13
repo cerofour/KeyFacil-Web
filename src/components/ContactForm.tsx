@@ -7,7 +7,12 @@ interface ContactFormProps {
   onClose: () => void
 }
 
-
+const ContactForm: React.FC<ContactFormProps> = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    nombre: "",
+    ruc: "",
+    telefono: "",
+  })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
