@@ -1,0 +1,56 @@
+name: React CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Usar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Ejecutar build
+        run: npm run build
+
+      - name: Ejecutar tests
+        run: npm test --if-present
+
+      - name: Guardar artefacto de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-react
+          path: build/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Descargar artefacto
+        uses: actions/download-artifact@v4
+        with:
+          name: build-react
+          path: build
+
+      - name: Desplegar a GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+
+      - name: Deploy a Pages
+        uses: actions/deploy-pages@v4
