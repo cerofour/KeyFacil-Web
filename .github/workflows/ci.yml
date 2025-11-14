@@ -7,7 +7,29 @@ on:
     branches: [ "main" ]
 
 jobs:
+  test:
+    name: Tests (PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Usar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar tests
+        run: npm test
+
   build:
+    name: Build & Tests (main)
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -18,15 +40,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
 
       - name: Instalar dependencias
-        run: npm install
+        run: npm ci
 
       - name: Ejecutar build
         run: npm run build
 
       - name: Ejecutar tests
-        run: npm test --if-present
+        run: npm test
 
       - name: Guardar artefacto de build
         uses: actions/upload-artifact@v4
@@ -36,11 +59,16 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     permissions:
       pages: write
       id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy-pages.outputs.page_url }}
 
     steps:
       - name: Descargar artefacto
@@ -51,6 +79,9 @@ jobs:
 
       - name: Desplegar a GitHub Pages
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
 
       - name: Deploy a Pages
+        id: deploy-pages
         uses: actions/deploy-pages@v4
