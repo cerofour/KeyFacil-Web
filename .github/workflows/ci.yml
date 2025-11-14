@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-react
-          path: build/
+          path: dist/
 
   deploy:
     needs: build
@@ -75,12 +75,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-react
-          path: build
+          path: dist
 
       - name: Desplegar a GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: dist
 
       - name: Deploy a Pages
         id: deploy-pages
